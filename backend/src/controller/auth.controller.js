@@ -83,18 +83,98 @@ export const updateProfile = async (req, res) => {
       return res.status(400).json({ message: "Profile pic is required" });
     }
 
-    const uploadResponse = await cloudinary.uploader.upload(profilePic);
-    
+    // Function to attempt upload with retries
+    const attemptUpload = async (retries = 3) => {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          const result = await new Promise((resolve, reject) => {
+            cloudinary.uploader.upload(
+              profilePic,
+              {
+                resource_type: "auto",
+                folder: "profile_pics",
+                transformation: [
+                  { width: 400, height: 400, crop: "fill" },
+                  { quality: "auto" },
+                  { fetch_format: "auto" }
+                ],
+                timeout: 30000, // Reduced timeout for each attempt
+                chunk_size: 1000000, // Reduced chunk size to 1MB
+                eager: [
+                  { width: 400, height: 400, crop: "fill", quality: "auto" }
+                ],
+                eager_async: true,
+                invalidate: true
+              },
+              (error, result) => {
+                if (error) {
+                  console.error(`Upload attempt ${attempt} failed:`, error);
+                  reject(error);
+                } else {
+                  resolve(result);
+                }
+              }
+            );
+          });
+
+          if (result && result.secure_url) {
+            return result;
+          }
+        } catch (error) {
+          console.error(`Attempt ${attempt} failed:`, error);
+          if (attempt === retries) {
+            throw error;
+          }
+          // Wait before retrying (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+        }
+      }
+    };
+
+    // Attempt the upload with retries
+    const uploadResponse = await attemptUpload();
+
+    if (!uploadResponse || !uploadResponse.secure_url) {
+      return res.status(400).json({ message: "Failed to upload image" });
+    }
+
+    // Update user profile with new image URL
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { profilePic: uploadResponse.secure_url },
       { new: true }
-    );
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     res.status(200).json(updatedUser);
   } catch (error) {
-    console.log("error in update profile:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error in update profile:", error);
+    
+    // Handle specific error cases
+    if (error.message === 'Request Timeout' || error.name === 'TimeoutError') {
+      return res.status(408).json({ 
+        message: "Image upload timed out after multiple attempts. Please try a smaller image or try again later." 
+      });
+    }
+    
+    if (error.http_code === 413) {
+      return res.status(413).json({ 
+        message: "Image file is too large. Please try a smaller image (under 1MB)." 
+      });
+    }
+
+    if (error.http_code === 400) {
+      return res.status(400).json({ 
+        message: "Invalid image format. Please try a different image (JPEG or PNG recommended)." 
+      });
+    }
+
+    res.status(500).json({ 
+      message: "Failed to update profile. Please try again later." 
+    });
   }
 };
 export const checkAuth = (req, res) => {

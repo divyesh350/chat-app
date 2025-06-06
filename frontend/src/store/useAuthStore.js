@@ -78,22 +78,42 @@ export const useAuthStore = create((set,get)=>({
       },
       connectSocket: () => {
         const { authUser } = get();
-        if (!authUser || get().socket?.connected) return;
+        if (!authUser) return;
+    
+        // Disconnect existing socket if any
+        if (get().socket?.connected) {
+          get().socket.disconnect();
+        }
     
         const socket = io(BASE_URL, {
           query: {
             userId: authUser._id,
           },
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
         });
-        socket.connect();
     
-        set({ socket: socket });
+        socket.on('connect', () => {
+          console.log('Socket connected');
+        });
+    
+        socket.on('connect_error', (error) => {
+          console.error('Socket connection error:', error);
+        });
+    
+        set({ socket });
     
         socket.on("getOnlineUsers", (userIds) => {
           set({ onlineUsers: userIds });
         });
       },
+    
       disconnectSocket: () => {
-        if (get().socket?.connected) get().socket.disconnect();
+        const socket = get().socket;
+        if (socket?.connected) {
+          socket.disconnect();
+          set({ socket: null, onlineUsers: [] });
+        }
       },
 }))

@@ -22,11 +22,15 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials:true
 }))
-app.use(express.json())
+
+// Increase payload size limit and timeout
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Set server timeout
+server.timeout = 120000; // 2 minutes timeout
 
 app.use(cookieParser())
-
-
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages",messageRoutes)
