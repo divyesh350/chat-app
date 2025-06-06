@@ -13,6 +13,8 @@ This project consists of two main parts:
 - JWT authentication
 - Cloudinary for image uploads
 - RESTful API endpoints
+- Optimized image upload handling with compression
+- Enhanced error handling and timeout management
 
 ### Frontend (`/frontend`)
 - React with Vite
@@ -21,6 +23,32 @@ This project consists of two main parts:
 - Zustand for state management
 - Socket.IO client for real-time features
 - Responsive design with multiple themes
+- Framer Motion for smooth animations
+- Optimized component performance with React.memo
+- Lazy loading for images
+- Enhanced user interface with modern animations
+
+## Recent Updates
+
+### Performance Improvements
+- Optimized sidebar component with React.memo and useCallback
+- Implemented lazy loading for user profile images
+- Enhanced animation performance with Framer Motion
+- Improved state management and component re-rendering
+
+### UI/UX Enhancements
+- Added smooth transitions and animations
+- Improved online/offline status display
+- Enhanced user interface with modern design elements
+- Better error handling and user feedback
+- Optimized image upload process with compression
+
+### Code Quality
+- Better component organization and separation
+- Improved code maintainability
+- Enhanced error handling
+- Better type checking and prop validation
+- Optimized socket connection management
 
 ## Quick Start
 
@@ -95,30 +123,42 @@ NODE_ENV=production
 VITE_API_URL=your_backend_url
 ```
 
-## Documentation
-
-For detailed documentation about each part of the application, please refer to:
-
-- [Backend Documentation](./backend/README.md)
-- [Frontend Documentation](./frontend/README.md)
-
 ## Features
 
-- Real-time messaging
-- User authentication
-- Profile management
-- Theme customization
-- Responsive design
-- Online/Offline status
-- Message history
-- Image upload support
+- Real-time messaging with optimized performance
+- User authentication with enhanced security
+- Profile management with image upload support
+- Theme customization with modern UI
+- Responsive design for all devices
+- Real-time online/offline status
+- Message history with optimized loading
+- Image upload with compression
+- Smooth animations and transitions
+- Optimized component performance
+- Enhanced error handling and user feedback
 
 ## Tech Stack
 
-- **Frontend**: React, Tailwind CSS, DaisyUI, Zustand, Socket.IO Client
-- **Backend**: Node.js, Express.js, MongoDB, Socket.IO, JWT
-- **Deployment**: Vite, Node.js
-- **Storage**: MongoDB, Cloudinary
+- **Frontend**: 
+  - React with Vite
+  - Tailwind CSS with DaisyUI
+  - Zustand for state management
+  - Socket.IO Client for real-time features
+  - Framer Motion for animations
+  - React.memo for performance optimization
+
+- **Backend**: 
+  - Node.js with Express.js
+  - MongoDB for database
+  - Socket.IO for real-time communication
+  - JWT for authentication
+  - Cloudinary for image storage
+  - Enhanced error handling
+
+- **Development Tools**:
+  - Vite for fast development
+  - ESLint for code quality
+  - Git for version control
 
 ## License
 
