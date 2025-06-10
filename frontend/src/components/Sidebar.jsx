@@ -1,12 +1,12 @@
-import { useEffect, useState, useCallback, memo } from "react";
+import { useEffect, useState, useCallback, memo, forwardRef } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
-import { Users } from "lucide-react";
+import { Users, Bot } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Separate UserItem component for better performance
-const UserItem = memo(({ user, isSelected, isOnline, onClick }) => (
+const UserItem = memo(forwardRef(({ user, isSelected, isOnline, onClick }, ref) => (
   <motion.button
     key={user._id}
     initial={{ opacity: 0, x: -20 }}
@@ -21,6 +21,7 @@ const UserItem = memo(({ user, isSelected, isOnline, onClick }) => (
       hover:bg-base-300 transition-colors
       ${isSelected ? "bg-base-300 ring-1 ring-base-300" : ""}
     `}
+    ref={ref}
   >
     <motion.div 
       className="relative mx-auto lg:mx-0"
@@ -33,11 +34,19 @@ const UserItem = memo(({ user, isSelected, isOnline, onClick }) => (
         className="size-12 object-cover rounded-full"
         loading="lazy"
       />
-      {isOnline && (
+      {isOnline && !user.isAI && (
         <motion.span
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           className="absolute bottom-0 right-0 size-3 bg-green-500 
+          rounded-full ring-2 ring-zinc-900"
+        />
+      )}
+      {user.isAI && (
+        <motion.span
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="absolute bottom-0 right-0 size-3 bg-blue-500 
           rounded-full ring-2 ring-zinc-900"
         />
       )}
@@ -57,11 +66,11 @@ const UserItem = memo(({ user, isSelected, isOnline, onClick }) => (
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        {isOnline ? "Online" : "Offline"}
+        {user.isAI ? "AI Assistant" : isOnline ? "Online" : "Offline"}
       </motion.div>
     </div>
   </motion.button>
-));
+)));
 
 UserItem.displayName = 'UserItem';
 
@@ -115,12 +124,19 @@ const Sidebar = () => {
 
   // Memoize filtered users
   const filteredUsers = useCallback(() => {
-    return showOnlineOnly
-      ? users.filter((user) => onlineUsers.includes(user._id))
-      : users;
+    let filtered = users;
+    if (showOnlineOnly) {
+      filtered = users.filter((user) => onlineUsers.includes(user._id));
+    }
+    // Always show AI user at the top
+    const aiUser = users.find(user => user.isAI);
+    if (aiUser) {
+      filtered = [aiUser, ...filtered.filter(user => !user.isAI)];
+    }
+    return filtered;
   }, [showOnlineOnly, users, onlineUsers]);
 
-  // Calculate online count excluding current user
+  // Calculate online count excluding current user and AI
   const onlineCount = Math.max(0, onlineUsers.length - 1);
 
   // Memoize user selection handler

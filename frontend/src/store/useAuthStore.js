@@ -19,7 +19,7 @@ export const useAuthStore = create((set,get)=>({
 
             set({authUser: res.data})
         } catch (error) {
-            console.log("Error in checkAuth",error)
+            // console.log("Error in checkAuth",error)
             set({authUser:null})
         }
         finally{
@@ -105,6 +105,7 @@ export const useAuthStore = create((set,get)=>({
         set({ socket });
     
         socket.on("getOnlineUsers", (userIds) => {
+          // console.log("Received online users:", userIds);
           set({ onlineUsers: userIds });
         });
       },

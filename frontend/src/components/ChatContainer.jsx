@@ -71,6 +71,7 @@ const ChatContainer = () => {
     selectedUser,
     subscribeToMessages,
     unsubscribeFromMessages,
+    isAILoading,
   } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
@@ -106,6 +107,13 @@ const ChatContainer = () => {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  // Scroll to bottom when AI loading state changes to show typing indicator
+  useEffect(() => {
+    if (isAILoading && messageEndRef.current) {
+      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [isAILoading]);
 
   if (isMessagesLoading) {
     return (
@@ -181,6 +189,26 @@ const ChatContainer = () => {
               </motion.div>
             </motion.div>
           ))}
+
+          {selectedUser?.isAI && isAILoading && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="chat chat-start"
+            >
+              <div className="chat-image avatar">
+                <div className="size-10 rounded-full border">
+                  <img
+                    src={selectedUser.profilePic || "/avatar.png"}
+                    alt="AI profile pic"
+                  />
+                </div>
+              </div>
+              <div className="chat-bubble flex flex-col">
+                <p className="text-sm italic">Typing...</p>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 

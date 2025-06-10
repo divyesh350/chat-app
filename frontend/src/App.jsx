@@ -12,12 +12,20 @@ import { Toaster } from 'react-hot-toast'
 import {useThemeStore} from "./store/useThemeStore"
 
 const App = () => {
-  const { authUser, checkAuth, isCheckingAuth , onlineUsers} = useAuthStore()
+  const { authUser, checkAuth, isCheckingAuth, connectSocket, disconnectSocket } = useAuthStore()
   const {theme}=useThemeStore()
 
   useEffect(() => {
     checkAuth()
   }, [checkAuth])
+
+  useEffect(() => {
+    if (!isCheckingAuth && authUser) {
+      connectSocket();
+    } else if (!authUser) {
+      disconnectSocket();
+    }
+  }, [isCheckingAuth, authUser, connectSocket, disconnectSocket]);
 
 
   

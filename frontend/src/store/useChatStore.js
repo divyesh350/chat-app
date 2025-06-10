@@ -9,6 +9,7 @@ export const useChatStore = create((set, get) => ({
     selectedUser: null,
     isUsersLoading: false,
     isMessagesLoading: false,
+    isAILoading: false,
   
     getUsers: async () => {
       set({ isUsersLoading: true });
@@ -33,33 +34,65 @@ export const useChatStore = create((set, get) => ({
         set({ isMessagesLoading: false });
       }
     },
-    sendMessage: async (messageData) => {
-      const { selectedUser, messages } = get();
+    sendMessage: async ({ text, image }) => {
+      const { selectedUser } = get();
+      const socket = useAuthStore.getState().socket;
+      const authUser = useAuthStore.getState().authUser; // Get authUser
+  
       try {
-        const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-        set({ messages: [...messages, res.data] });
+        // If the selected user is AI, use the AI endpoint
+        if (selectedUser.isAI) {
+          // Add user's message to the chat immediately
+          const userMessage = {
+            _id: Date.now(), // Temporary ID for immediate display
+            senderId: authUser._id, // Your user ID
+            receiverId: selectedUser._id, // AI user ID
+            text: text,
+            image: image, // Although image is disabled for AI, keep it for consistency
+            createdAt: new Date().toISOString(),
+          };
+          set((state) => ({
+            messages: [...state.messages, userMessage],
+          }));
+
+          set({ isAILoading: true });
+          const { data } = await axiosInstance.post("/ai/chat", { text });
+          set((state) => ({
+            messages: [...state.messages, data],
+          }));
+          return;
+        }
+  
+        // Regular user message handling
+        const { data } = await axiosInstance.post(`/messages/send/${selectedUser._id}`, {
+          text,
+          image,
+        });
+  
+        set((state) => ({
+          messages: [...state.messages, data],
+        }));
+  
+        if (socket) {
+          socket.emit("sendMessage", data);
+        }
       } catch (error) {
-        toast.error(error.response.data.message);
+        console.error("Error in sendMessage:", error);
+        toast.error(error.response.data.message || "Failed to send message");
+        throw error;
+      } finally {
+        set({ isAILoading: false });
       }
     },
   
     subscribeToMessages: () => {
-      const { selectedUser } = get();
-      if (!selectedUser) return;
-  
       const socket = useAuthStore.getState().socket;
-      if (!socket) {
-        console.warn('Socket not initialized');
-        return;
-      }
+      if (!socket) return;
   
-      socket.on("newMessage", (newMessage) => {
-        const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-        if (!isMessageSentFromSelectedUser) return;
-  
-        set({
-          messages: [...get().messages, newMessage],
-        });
+      socket.on("newMessage", (message) => {
+        set((state) => ({
+          messages: [...state.messages, message],
+        }));
       });
     },
   
@@ -70,5 +103,5 @@ export const useChatStore = create((set, get) => ({
       socket.off("newMessage");
     },
   
-    setSelectedUser: (selectedUser) => set({ selectedUser }),
+    setSelectedUser: (user) => set({ selectedUser: user }),
   }));

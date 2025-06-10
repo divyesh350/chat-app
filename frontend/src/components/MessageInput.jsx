@@ -7,8 +7,9 @@ import { motion, AnimatePresence } from "framer-motion";
 const MessageInput = () => {
     const [text, setText] = useState("")
     const [imagePreview, setImagePreview] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const fileInputRef = useRef(null);
-    const { sendMessage } = useChatStore();
+    const { sendMessage, selectedUser } = useChatStore();
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -32,19 +33,24 @@ const MessageInput = () => {
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if (!text.trim() && !imagePreview) return;
-    
+        if (isLoading) return;
+
+        setIsLoading(true);
         try {
-          await sendMessage({
-            text: text.trim(),
-            image: imagePreview,
-          });
-    
-          // Clear form
-          setText("");
-          setImagePreview(null);
-          if (fileInputRef.current) fileInputRef.current.value = "";
+            await sendMessage({
+                text: text.trim(),
+                image: imagePreview,
+            });
+
+            // Clear form
+            setText("");
+            setImagePreview(null);
+            if (fileInputRef.current) fileInputRef.current.value = "";
         } catch (error) {
-          console.error("Failed to send message:", error);
+            console.error("Failed to send message:", error);
+            toast.error("Failed to send message");
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -55,7 +61,7 @@ const MessageInput = () => {
             className="p-4 w-full"
         >
             <AnimatePresence>
-                {imagePreview && (
+                {imagePreview && !selectedUser?.isAI && (
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -97,35 +103,40 @@ const MessageInput = () => {
                         whileFocus={{ scale: 1.01 }}
                         type="text"
                         className="w-full input input-bordered rounded-lg input-sm sm:input-md"
-                        placeholder="Type a message..."
+                        placeholder={selectedUser?.isAI ? "Chat with Blink Chat AI..." : "Type a message..."}
                         value={text}
                         onChange={(e) => setText(e.target.value)}
+                        disabled={isLoading}
                     />
-                    <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        ref={fileInputRef}
-                        onChange={handleImageChange}
-                    />
+                    {!selectedUser?.isAI && (
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            ref={fileInputRef}
+                            onChange={handleImageChange}
+                        />
+                    )}
 
-                    <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        type="button"
-                        className={`hidden sm:flex btn btn-circle
-                         ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
-                        onClick={() => fileInputRef.current?.click()}
-                    >
-                        <Image size={20} />
-                    </motion.button>
+                    {!selectedUser?.isAI && (
+                        <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            type="button"
+                            className={`hidden sm:flex btn btn-circle
+                            ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <Image size={20} />
+                        </motion.button>
+                    )}
                 </div>
                 <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     type="submit"
                     className="btn btn-sm btn-circle"
-                    disabled={!text.trim() && !imagePreview}
+                    disabled={(!text.trim() && !imagePreview) || isLoading}
                 >
                     <Send size={22} />
                 </motion.button>
@@ -134,4 +145,4 @@ const MessageInput = () => {
     );
 }
 
-export default MessageInput
+export default MessageInput;

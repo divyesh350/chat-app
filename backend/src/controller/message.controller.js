@@ -2,11 +2,16 @@ import User from "../models/user.model.js";
 import Message from "../models/message.model.js"
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId ,io} from "../lib/socket.js";
+import { getOrCreateAIUser } from "./ai.controller.js";
 
 
 export const getUsersForSidebar = async (req, res) => {
   try {
     const loggedInUserId = req.user._id;
+
+    // Ensure AI user exists
+    await getOrCreateAIUser();
+
     const filteredUsers = await User.find({
       _id: { $ne: loggedInUserId },
     }).select("-password");
