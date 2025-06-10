@@ -48,6 +48,11 @@ npm run build
 - Online/Offline status
 - Message timestamps
 - Read receipts
+- **Blink Chat AI Integration**: 
+  - Appears as a contact in the sidebar (always available).
+  - Accessible by every logged-in user for personal, human-like conversations.
+  - Responses powered by Groq API (using models like `mistral-saba-24b`).
+  - Displays a "typing..." indicator when the AI is generating a response.
 
 ### User Interface Components
 - **AuthImagePattern**: Custom animated background for auth pages
@@ -81,6 +86,7 @@ frontend/
 - socket.io-client: Real-time communication
 - zustand: State management
 - axios: HTTP client
+- groq-sdk: Groq API client for AI bot
 
 ### UI & Styling
 - tailwindcss: Utility-first CSS
@@ -99,6 +105,7 @@ Create a `.env` file in the root directory:
 
 ```env
 VITE_API_URL=http://localhost:5001
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
 ## Theme Configuration
@@ -154,6 +161,7 @@ Manages chat functionality and messages:
   selectedUser: null,         // Currently selected chat user
   isUsersLoading: false,      // Users loading state
   isMessagesLoading: false,   // Messages loading state
+  isAILoading: false,         // AI response loading state
 }
 ```
 

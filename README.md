@@ -1,6 +1,6 @@
 # Real-time Chat Application
 
-A modern real-time chat application built with the MERN stack (MongoDB, Express.js, React, Node.js) featuring real-time messaging, user authentication, and theme customization.
+A modern real-time chat application built with the MERN stack (MongoDB, Express.js, React, Node.js) featuring real-time messaging, user authentication, theme customization, and an integrated AI chatbot.
 
 ## Project Overview
 
@@ -15,6 +15,7 @@ This project consists of two main parts:
 - RESTful API endpoints
 - Optimized image upload handling with compression
 - Enhanced error handling and timeout management
+- **Groq AI Integration**: Provides human-like responses for the AI chatbot.
 
 ### Frontend (`/frontend`)
 - React with Vite
@@ -29,6 +30,12 @@ This project consists of two main parts:
 - Enhanced user interface with modern animations
 
 ## Recent Updates
+
+### AI Chatbot Integration
+- **Blink Chat AI**: An AI assistant available as a contact in the sidebar for personal, human-like conversations.
+- **Always Available**: The AI bot is always accessible, even if no real users are online.
+- **Natural Responses**: Utilizes Groq API for fast and natural responses.
+- **Typing Indicator**: Displays a "typing..." indicator for improved user experience during AI response generation.
 
 ### Performance Improvements
 - Optimized sidebar component with React.memo and useCallback
@@ -116,6 +123,7 @@ CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 NODE_ENV=production
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
 #### Frontend (`.env`)
@@ -136,6 +144,7 @@ VITE_API_URL=your_backend_url
 - Smooth animations and transitions
 - Optimized component performance
 - Enhanced error handling and user feedback
+- **Blink Chat AI**: Integrated AI chatbot for engaging conversations.
 
 ## Tech Stack
 
@@ -154,6 +163,7 @@ VITE_API_URL=your_backend_url
   - JWT for authentication
   - Cloudinary for image storage
   - Enhanced error handling
+  - **Groq**: AI inference for the chatbot.
 
 - **Development Tools**:
   - Vite for fast development
